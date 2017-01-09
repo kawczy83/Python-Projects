@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import seaborn as sns
 
 #import data from: 
 #https://www.kaggle.com/rush4ratio/video-game-sales-with-ratings
@@ -27,6 +28,8 @@ cod['Category'] = "CoD"
 mario_cod = pd.merge(mario,cod,how='outer')
 combined = pd.merge(mario_cod, gta, how='outer')
 
+#add new column: differences between Critics and Users
+combined['Diff'] = combined['Critic_Score'] - combined['User_Score']
 #charts
 #mario
 plt.scatter(mario['Critic_Score'],mario['User_Score'])
@@ -43,10 +46,22 @@ plt.scatter(cod['Critic_Score'],cod['User_Score'])
 plt.xlabel("Critic Score")
 plt.ylabel("User Score")
 
-#all together
-plt.scatter(combined['Critic_Score'],combined['User_Score'])
+#all together - with matplotlib
+plt.scatter(combined['Critic_Score'],combined['User_Score'],
+            label='Category')
 plt.xlabel("Critic Score")
 plt.ylabel("User Score")
+#all together - with seaborn
+sns.set(style="white")
+g = sns.lmplot(x = 'Critic_Score',
+           y = 'User_Score',
+           data=combined, 
+           fit_reg=False, 
+           hue="Category",
+           palette="Set1")
+sns.despine(top=True, right=True, left=True, bottom=True)
+g = (g.set_axis_labels("Critic Score", "User Score")
+.set(xlim=(0, 100), ylim=(0, 100)))
 
 yearlySales = combined.groupby(['Year_of_Release','Category']).Global_Sales.sum()
 yearlySales.unstack().plot(kind='bar',stacked=True, colormap= 'Reds', 
